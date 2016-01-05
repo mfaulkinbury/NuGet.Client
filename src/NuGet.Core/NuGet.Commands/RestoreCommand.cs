@@ -75,7 +75,7 @@ namespace NuGet.Commands
             bool relockFile = false;
             if (_request.ExistingLockFile != null
                 && _request.ExistingLockFile.IsLocked
-                && !_request.ExistingLockFile.IsValidForPackageSpec(_request.Project))
+                && !_request.ExistingLockFile.IsValidForPackageSpec(_request.Project, _request.LockFileVersion))
             {
                 // The lock file was locked, but the project.json is out of date
                 relockFile = true;
