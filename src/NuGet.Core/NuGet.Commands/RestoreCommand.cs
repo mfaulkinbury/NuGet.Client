@@ -664,7 +664,7 @@ namespace NuGet.Commands
             {
                 nupkgStream.Seek(0, SeekOrigin.Begin);
 
-                var packageReader = new PackageReader(nupkgStream);
+                var packageReader = new PackageArchiveReader(nupkgStream);
 
                 // Get package files, excluding directory entries
                 lockFileLib.Files = packageReader.GetFiles().Where(x => !x.EndsWith("/")).ToList();
