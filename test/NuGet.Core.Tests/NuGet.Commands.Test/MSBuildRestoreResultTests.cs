@@ -56,7 +56,7 @@ namespace NuGet.Commands.Test
                     }
                     else
                     {
-                        expected = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".nuget", "packages") + Path.DirectorySeparatorChar;
+                        expected = Path.Combine(Environment.GetEnvironmentVariable("HOME"), ".nuget", "packages") + Path.DirectorySeparatorChar;
                     }
                     Assert.Equal(expected, element.Value);
                 }
