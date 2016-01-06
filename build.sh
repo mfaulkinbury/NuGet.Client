@@ -33,12 +33,6 @@ do
         echo "Skipping tests in $testProject because they hang"
         continue
     fi
-
-    if grep -q dnxcore50 "$testProject"; then    
-        echo "Running tests in $testProject on CoreCLR"
-        dnvm use 1.0.0-rc1-update1 -runtime coreclr
-        dnx --project $testProject test -parallel none
-    else
-        echo "Skipping the tests in $testProject on CoreCLR"
-    fi
+    dnvm use 1.0.0-rc1-update1 -runtime coreclr
+    dnx --project $testProject test -parallel none
 done
