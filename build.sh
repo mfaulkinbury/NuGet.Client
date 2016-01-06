@@ -1,8 +1,5 @@
 #!/usr/bin/env bash
 
-# export env variable
-export temp="$HOME/temp"
-
 # install dnx
 if ! type dnvm > /dev/null 2>&1; then
     source ~/.dnx/dnvm/dnvm.sh
@@ -36,10 +33,6 @@ do
         echo "Skipping tests in $testProject because they hang"
         continue
     fi
-
-    echo "Running tests in $testProject on Mono"
-    dnvm use 1.0.0-rc1-update1 -runtime mono
-    dnx --project $testProject test -parallel none
 
     if grep -q dnxcore50 "$testProject"; then    
         echo "Running tests in $testProject on CoreCLR"
