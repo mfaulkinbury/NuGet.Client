@@ -1684,7 +1684,7 @@ namespace NuGet.Configuration.Test
                 var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <SectionName>
-    <add key=""path-key"" value=""\Blah"" />
+    <add key=""path-key"" value=""/Blah"" />
   </SectionName>
 </configuration>";
                 ConfigurationFileTestUtility.CreateConfigurationFile("nuget.config", mockBaseDirectory, config);
@@ -1737,19 +1737,19 @@ namespace NuGet.Configuration.Test
             using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 ConfigurationFileTestUtility.CreateConfigurationFile("a1.config", Path.Combine(mockBaseDirectory, @"NuGet"), fileContent);
-                ConfigurationFileTestUtility.CreateConfigurationFile("a1.config", Path.Combine(mockBaseDirectory, @"NuGet\Config"), fileContent);
-                ConfigurationFileTestUtility.CreateConfigurationFile("a2.config", Path.Combine(mockBaseDirectory, @"NuGet\Config"), fileContent);
-                ConfigurationFileTestUtility.CreateConfigurationFile("a3.xconfig", Path.Combine(mockBaseDirectory, @"NuGet\Config"), fileContent);
-                ConfigurationFileTestUtility.CreateConfigurationFile("a1.config", Path.Combine(mockBaseDirectory, @"NuGet\Config\IDE"), fileContent);
-                ConfigurationFileTestUtility.CreateConfigurationFile("a2.config", Path.Combine(mockBaseDirectory, @"NuGet\Config\IDE"), fileContent);
-                ConfigurationFileTestUtility.CreateConfigurationFile("a3.xconfig", Path.Combine(mockBaseDirectory, @"NuGet\Config\IDE"), fileContent);
-                ConfigurationFileTestUtility.CreateConfigurationFile("a1.config", Path.Combine(mockBaseDirectory, @"NuGet\Config\IDE\Version"), fileContent);
-                ConfigurationFileTestUtility.CreateConfigurationFile("a2.config", Path.Combine(mockBaseDirectory, @"NuGet\Config\IDE\Version"), fileContent);
-                ConfigurationFileTestUtility.CreateConfigurationFile("a3.xconfig", Path.Combine(mockBaseDirectory, @"NuGet\Config\IDE\Version"), fileContent);
-                ConfigurationFileTestUtility.CreateConfigurationFile("a1.config", Path.Combine(mockBaseDirectory, @"NuGet\Config\IDE\Version\SKU"), fileContent);
-                ConfigurationFileTestUtility.CreateConfigurationFile("a2.config", Path.Combine(mockBaseDirectory, @"NuGet\Config\IDE\Version\SKU"), fileContent);
-                ConfigurationFileTestUtility.CreateConfigurationFile("a3.xconfig", Path.Combine(mockBaseDirectory, @"NuGet\Config\IDE\Version\SKU"), fileContent);
-                ConfigurationFileTestUtility.CreateConfigurationFile("a1.config", Path.Combine(mockBaseDirectory, @"NuGet\Config\IDE\Version\SKU\Dir"), fileContent);
+                ConfigurationFileTestUtility.CreateConfigurationFile("a1.config", Path.Combine(mockBaseDirectory, "NuGet","Config"), fileContent);
+                ConfigurationFileTestUtility.CreateConfigurationFile("a2.config", Path.Combine(mockBaseDirectory, "NuGet","Config"), fileContent);
+                ConfigurationFileTestUtility.CreateConfigurationFile("a3.xconfig", Path.Combine(mockBaseDirectory, "NuGet","Config"), fileContent);
+                ConfigurationFileTestUtility.CreateConfigurationFile("a1.config", Path.Combine(mockBaseDirectory, "NuGet","Config","IDE"), fileContent);
+                ConfigurationFileTestUtility.CreateConfigurationFile("a2.config", Path.Combine(mockBaseDirectory, "NuGet","Config","IDE"), fileContent);
+                ConfigurationFileTestUtility.CreateConfigurationFile("a3.xconfig", Path.Combine(mockBaseDirectory, "NuGet","Config","IDE"), fileContent);
+                ConfigurationFileTestUtility.CreateConfigurationFile("a1.config", Path.Combine(mockBaseDirectory, "NuGet","Config","IDE","Version"), fileContent);
+                ConfigurationFileTestUtility.CreateConfigurationFile("a2.config", Path.Combine(mockBaseDirectory, "NuGet","Config","IDE","Version"), fileContent);
+                ConfigurationFileTestUtility.CreateConfigurationFile("a3.xconfig", Path.Combine(mockBaseDirectory, "NuGet","Config","IDE","Version"), fileContent);
+                ConfigurationFileTestUtility.CreateConfigurationFile("a1.config", Path.Combine(mockBaseDirectory, "NuGet","Config","IDE","Version","SKU"), fileContent);
+                ConfigurationFileTestUtility.CreateConfigurationFile("a2.config", Path.Combine(mockBaseDirectory, "NuGet","Config","IDE","Version","SKU"), fileContent);
+                ConfigurationFileTestUtility.CreateConfigurationFile("a3.xconfig", Path.Combine(mockBaseDirectory, "NuGet","Config","IDE","Version","SKU"), fileContent);
+                ConfigurationFileTestUtility.CreateConfigurationFile("a1.config", Path.Combine(mockBaseDirectory, "NuGet","Config","IDE","Version","SKU","Dir"), fileContent);
 
                 // Act
                 var settings = Settings.LoadMachineWideSettings(
@@ -1761,14 +1761,14 @@ namespace NuGet.Configuration.Test
                     files,
                     new string[]
                         {
-                        String.Format(@"{0}\NuGet\Config\IDE\Version\SKU\a1.config", mockBaseDirectory),
-                        String.Format(@"{0}\NuGet\Config\IDE\Version\SKU\a2.config", mockBaseDirectory),
-                        String.Format(@"{0}\NuGet\Config\IDE\Version\a1.config", mockBaseDirectory),
-                        String.Format(@"{0}\NuGet\Config\IDE\Version\a2.config", mockBaseDirectory),
-                        String.Format(@"{0}\NuGet\Config\IDE\a1.config", mockBaseDirectory),
-                        String.Format(@"{0}\NuGet\Config\IDE\a2.config", mockBaseDirectory),
-                        String.Format(@"{0}\NuGet\Config\a1.config", mockBaseDirectory),
-                        String.Format(@"{0}\NuGet\Config\a2.config", mockBaseDirectory)
+                        Path.Combine(mockBaseDirectory, "NuGet","Config","IDE","Version","SKU","a1.config"),
+                        Path.Combine(mockBaseDirectory, "NuGet","Config","IDE","Version","SKU","a2.config"),
+                        Path.Combine(mockBaseDirectory, "NuGet","Config","IDE","Version","a1.config"),
+                        Path.Combine(mockBaseDirectory, "NuGet","Config","IDE","Version","a2.config"),
+                        Path.Combine(mockBaseDirectory, "NuGet","Config","IDE","a1.config"),
+                        Path.Combine(mockBaseDirectory, "NuGet","Config","IDE","a2.config"),
+                        Path.Combine(mockBaseDirectory, "NuGet","Config","a1.config"),
+                        Path.Combine(mockBaseDirectory, "NuGet","Config","a2.config")
                         });
             }
         }
@@ -1935,7 +1935,7 @@ namespace NuGet.Configuration.Test
     <add key=""key3"" value=""user2"" />
   </SectionName>
 </configuration>".Replace("\r\n", "\n");
-                ConfigurationFileTestUtility.CreateConfigurationFile("a1.config", Path.Combine(mockBaseDirectory, @"NuGet\Config"), FileContent1);
+                ConfigurationFileTestUtility.CreateConfigurationFile("a1.config", Path.Combine(mockBaseDirectory, "NuGet","Config"), FileContent1);
                 ConfigurationFileTestUtility.CreateConfigurationFile("user1.config", mockBaseDirectory, FileContent2);
                 ConfigurationFileTestUtility.CreateConfigurationFile("user2.config", mockBaseDirectory, FileContent3);
 
