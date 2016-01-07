@@ -1977,7 +1977,7 @@ namespace NuGet.Configuration.Test
 </config>
 </configuration>";
 
-            var nugetConfigPath = "NuGet.config";
+            var nugetConfigPath = "NuGet.Config";
             using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
@@ -2002,7 +2002,7 @@ namespace NuGet.Configuration.Test
 </config>
 </configuration>";
 
-            var nugetConfigPath = "NuGet.config";
+            var nugetConfigPath = "NuGet.Config";
             using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
