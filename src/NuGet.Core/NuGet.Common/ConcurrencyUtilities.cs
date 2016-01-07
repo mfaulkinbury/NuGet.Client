@@ -24,7 +24,7 @@ namespace NuGet.Common
             }
 
             var lockPath = FileLockPath(filePath);
-            var bytes = Encoding.UTF8.GetBytes($"{ProcessId}{Environment.NewLine}{filePath}");
+            var bytes = Encoding.UTF8.GetBytes($"{ProcessId}{Environment.NewLine}{filePath}{Environment.NewLine}");
 
             while (true)
             {
@@ -70,14 +70,16 @@ namespace NuGet.Common
                     return _basePath;
                 }
 
-                if (RuntimeEnvironmentHelper.IsWindows || !Directory.Exists("/var/lock/"))
-                {
-                    _basePath = Path.Combine(NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp), "lock");
-                }
-                else
-                {
-                    _basePath = "/var/lock/nuget/";
-                }
+                _basePath = Path.Combine(NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp), "lock");
+
+                //if (RuntimeEnvironmentHelper.IsWindows || !Directory.Exists("/var/lock/"))
+                //{
+                //    _basePath = Path.Combine(NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp), "lock");
+                //}
+                //else
+                //{
+                //    _basePath = "/var/lock/nuget/";
+                //}
 
                 Directory.CreateDirectory(_basePath);
 
