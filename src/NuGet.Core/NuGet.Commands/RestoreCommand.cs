@@ -561,7 +561,8 @@ namespace NuGet.Commands
                     .OrderBy(group => group)));
 
             foreach (var frameworkInfo in project.TargetFrameworks
-                                            .OrderBy(framework => framework.FrameworkName.ToString()))
+                                            .OrderBy(framework => framework.FrameworkName.ToString(),
+                                                StringComparer.Ordinal))
             {
                 lockFile.ProjectFileDependencyGroups.Add(new ProjectFileDependencyGroup(
                     frameworkInfo.FrameworkName.ToString(),
@@ -665,8 +666,8 @@ namespace NuGet.Commands
 
             // Add the targets
             foreach (var targetGraph in targetGraphs
-                .OrderBy(graph => graph.Framework.ToString())
-                .ThenBy(graph => graph.RuntimeIdentifier))
+                .OrderBy(graph => graph.Framework.ToString(), StringComparer.Ordinal)
+                .ThenBy(graph => graph.RuntimeIdentifier, StringComparer.Ordinal))
             {
                 var target = new LockFileTarget();
                 target.TargetFramework = targetGraph.Framework;
@@ -849,7 +850,11 @@ namespace NuGet.Commands
             using (var packageReader = new PackageReader(File.OpenRead(package.ZipPath)))
             {
                 // Get package files, excluding directory entries and OPC files
-                lockFileLib.Files = packageReader.GetFiles().Where(file => IsAllowedLibraryFile(file)).ToList();
+                lockFileLib.Files = packageReader
+                    .GetFiles()
+                    .Where(file => IsAllowedLibraryFile(file))
+                    .OrderBy(file => file, StringComparer.Ordinal)
+                    .ToList();
             }
 
             return lockFileLib;
