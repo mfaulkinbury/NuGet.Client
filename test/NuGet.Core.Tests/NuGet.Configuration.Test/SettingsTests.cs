@@ -1466,7 +1466,7 @@ namespace NuGet.Configuration.Test
     <add key=""key3"" value=""value4"" />
   </SectionName>
 </configuration>";
-                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, Path.Combine(mockBaseDirectory, @"dir1\dir2"), config);
+                ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, Path.Combine(mockBaseDirectory, "dir1","dir2"), config);
                 config = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <SectionName>
@@ -1477,7 +1477,7 @@ namespace NuGet.Configuration.Test
                 ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, Path.Combine(mockBaseDirectory, "dir1"), config);
 
                 // Act
-                var settings = Settings.LoadDefaultSettings(Path.Combine(mockBaseDirectory, @"dir1\dir2"), null, null);
+                var settings = Settings.LoadDefaultSettings(Path.Combine(mockBaseDirectory, "dir1","dir2"), null, null);
                 var values = settings.GetSettingValues("SectionName");
                 var key1Value = values.Where(s => s.Key.Equals("key1")).OrderByDescending(s => s.Priority).First();
                 var key2Value = values.Single(s => s.Key.Equals("key2"));
