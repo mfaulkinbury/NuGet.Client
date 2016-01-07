@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using NuGet.Configuration;
@@ -455,7 +453,10 @@ namespace NuGet.Commands.Test
 
                 var lockFilePath = Path.Combine(projectDir, "project.lock.json");
 
-                var lastHash = SHA1.Create().ComputeHash(Encoding.UTF32.GetBytes(lockFilePath));
+                var lastDate = File.GetLastWriteTimeUtc(lockFilePath);
+
+                // wait half a second to make sure the time difference can be picked up
+                await Task.Delay(500);
 
                 request = new RestoreRequest(spec, sources, packagesDir);
 
@@ -474,11 +475,11 @@ namespace NuGet.Commands.Test
                 result = await command.ExecuteAsync();
                 result.Commit(logger);
 
-                var currentHash = SHA1.Create().ComputeHash(Encoding.UTF32.GetBytes(lockFilePath));
+                var currentDate = File.GetLastWriteTimeUtc(lockFilePath);
 
                 // Assert
                 // The file should be written out
-                Assert.NotEqual(lastHash, currentHash);
+                Assert.NotEqual(lastDate, currentDate);
             }
         }
 
@@ -510,7 +511,7 @@ namespace NuGet.Commands.Test
                 var lockFilePath = Path.Combine(projectDir, "project.lock.json");
 
                 // Act
-                var lastHash = SHA1.Create().ComputeHash(Encoding.UTF32.GetBytes(lockFilePath));
+                var lastDate = File.GetLastWriteTime(lockFilePath);
 
                 request = new RestoreRequest(spec, sources, packagesDir);
 
@@ -521,13 +522,16 @@ namespace NuGet.Commands.Test
                 command = new RestoreCommand(logger, request);
                 result = await command.ExecuteAsync();
 
+                // wait half a second to make sure the time difference can be picked up
+                await Task.Delay(500);
+
                 result.Commit(logger, true);
 
-                var currentHash = SHA1.Create().ComputeHash(Encoding.UTF32.GetBytes(lockFilePath));
+                var currentDate = File.GetLastWriteTime(lockFilePath);
 
                 // Assert
                 // The file should be written out
-                Assert.NotEqual(lastHash, currentHash);
+                Assert.NotEqual(lastDate, currentDate);
             }
         }
 
