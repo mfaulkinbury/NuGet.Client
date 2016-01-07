@@ -1,5 +1,7 @@
 ﻿using NuGet.Packaging.Core;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace NuGet.Packaging
@@ -9,6 +11,23 @@ namespace NuGet.Packaging
         public static IEnumerable<string> GetPackageFiles(this IPackageCoreReader packageReader, PackageSaveModes packageSaveMode)
         {
             return packageReader.GetFiles().Where(file => PackageHelper.IsPackageFile(file, packageSaveMode));
+        }
+
+        public static IEnumerable<string> GetSatelliteFiles(this IPackageContentReader packageReader, string packageLanguage)
+        {
+            var satelliteFiles = new List<string>();
+
+            // Existence of the package file is the validation that the package exists
+            var libItemGroups = packageReader.GetLibItems();
+            foreach (var libItemGroup in libItemGroups)
+            {
+                var satelliteFilesInGroup = libItemGroup.Items.Where(item => Path.GetDirectoryName(item).Split(Path.DirectorySeparatorChar)
+                    .Contains(packageLanguage, StringComparer.OrdinalIgnoreCase));
+
+                satelliteFiles.AddRange(satelliteFilesInGroup);
+            }
+
+            return satelliteFiles;
         }
     }
 }

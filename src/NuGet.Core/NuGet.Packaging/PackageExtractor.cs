@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.IO.Compression;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -21,10 +20,9 @@ namespace NuGet.Packaging
             PackageSaveModes packageSaveMode,
             CancellationToken token)
         {
-            var filesAdded = new List<string>();
             if (packageStream == null)
             {
-                throw new ArgumentNullException("packageStream");
+                throw new ArgumentNullException(nameof(packageStream));
             }
 
             if (!packageStream.CanSeek)
@@ -37,19 +35,20 @@ namespace NuGet.Packaging
                 throw new ArgumentNullException("packagePathResolver");
             }
 
+            var filesAdded = new List<string>();
+
             // TODO: Need to handle PackageSaveMode
             // TODO: Support overwriting files also?
             var nupkgStartPosition = packageStream.Position;
-            var zipArchive = new ZipArchive(packageStream);
-
-            var packageReader = new PackageArchiveReader(zipArchive);
+            var packageReader = new PackageArchiveReader(packageStream);
 
             var packageIdentityFromNuspec = packageReader.GetIdentity();
 
             var packageDirectoryInfo = Directory.CreateDirectory(packagePathResolver.GetInstallPath(packageIdentityFromNuspec));
             var packageDirectory = packageDirectoryInfo.FullName;
 
-            filesAdded.AddRange(await PackageHelper.CreatePackageFilesAsync(zipArchive.Entries, packageDirectory, packageSaveMode, token));
+            var packageFiles = packageReader.GetPackageFiles(packageSaveMode);
+            filesAdded.AddRange(await packageReader.CopyFilesAsync(packageDirectory, packageFiles, token));
 
             var nupkgFilePath = Path.Combine(packageDirectory, packagePathResolver.GetPackageFileName(packageIdentityFromNuspec));
             if (packageSaveMode.HasFlag(PackageSaveModes.Nupkg))
@@ -65,14 +64,14 @@ namespace NuGet.Packaging
             if (packageExtractionContext == null
                 || packageExtractionContext.CopySatelliteFiles)
             {
-                filesAdded.AddRange(await CopySatelliteFilesAsync(packageIdentityFromNuspec, packagePathResolver, packageSaveMode, token));
+                filesAdded.AddRange(await CopySatelliteFilesAsync(packageReader, packagePathResolver, packageSaveMode, token));
             }
 
             return filesAdded;
         }
 
         public static async Task<IEnumerable<string>> ExtractPackageAsync(
-            IPackageCoreReader packageReader,
+            PackageReaderBase packageReader,
             Stream packageStream,
             PackagePathResolver packagePathResolver,
             PackageExtractionContext packageExtractionContext,
@@ -133,40 +132,71 @@ namespace NuGet.Packaging
                 // Short-circuit this if the package is not a satellite package.
                 if (isSatellitePackage)
                 {
-                    filesAdded.AddRange(await CopySatelliteFilesAsync(packageIdentityFromNuspec, packagePathResolver, packageSaveMode, token));
+                    filesAdded.AddRange(await CopySatelliteFilesAsync(packageReader, packagePathResolver, packageSaveMode, token));
                 }
             }
 
             return filesAdded;
         }
-        public static async Task<IEnumerable<string>> CopySatelliteFilesAsync(PackageIdentity packageIdentity, PackagePathResolver packagePathResolver,
-            PackageSaveModes packageSaveMode, CancellationToken token)
+
+        public static async Task<IEnumerable<string>> CopySatelliteFilesAsync(
+            PackageIdentity packageIdentity, 
+            PackagePathResolver packagePathResolver,
+            PackageSaveModes packageSaveMode, 
+            CancellationToken token)
         {
-            var satelliteFilesCopied = Enumerable.Empty<string>();
             if (packageIdentity == null)
             {
-                throw new ArgumentNullException("packageIdentity");
+                throw new ArgumentNullException(nameof(packageIdentity));
             }
 
             if (packagePathResolver == null)
             {
-                throw new ArgumentNullException("packagePathResolver");
+                throw new ArgumentNullException(nameof(packagePathResolver));
             }
+
+            var satelliteFilesCopied = Enumerable.Empty<string>();
 
             var nupkgFilePath = packagePathResolver.GetInstalledPackageFilePath(packageIdentity);
             if (File.Exists(nupkgFilePath))
             {
                 using (var packageStream = File.OpenRead(nupkgFilePath))
                 {
-                    string language;
-                    string runtimePackageDirectory;
-                    IEnumerable<ZipArchiveEntry> satelliteFiles;
-                    if (PackageHelper.GetSatelliteFiles(packageStream, packageIdentity, packagePathResolver, out language, out runtimePackageDirectory, out satelliteFiles))
-                    {
-                        // Now, add all the satellite files collected from the package to the runtime package folder(s)
-                        satelliteFilesCopied = await PackageHelper.CreatePackageFilesAsync(satelliteFiles, runtimePackageDirectory, packageSaveMode, token);
-                    }
+                    var packageReader = new PackageArchiveReader(packageStream);
+                    return await CopySatelliteFilesAsync(packageReader, packagePathResolver, packageSaveMode, token);
                 }
+            }
+
+            return satelliteFilesCopied;
+        }
+
+        private static async Task<IEnumerable<string>> CopySatelliteFilesAsync(
+            PackageReaderBase packageReader,
+            PackagePathResolver packagePathResolver,
+            PackageSaveModes packageSaveMode,
+            CancellationToken token)
+        {
+            if (packageReader == null)
+            {
+                throw new ArgumentNullException(nameof(packageReader));
+            }
+
+            if (packagePathResolver == null)
+            {
+                throw new ArgumentNullException(nameof(packagePathResolver));
+            }
+
+            var satelliteFilesCopied = Enumerable.Empty<string>();
+
+            string runtimePackageDirectory;
+            var satelliteFiles = PackageHelper
+                .GetSatelliteFiles(packageReader, packagePathResolver, out runtimePackageDirectory)
+                .Where(file => PackageHelper.IsPackageFile(file, packageSaveMode))
+                .ToList();
+            if (satelliteFiles.Any())
+            {
+                // Now, add all the satellite files collected from the package to the runtime package folder(s)
+                satelliteFilesCopied = await packageReader.CopyFilesAsync(runtimePackageDirectory, satelliteFiles, token);
             }
 
             return satelliteFilesCopied;

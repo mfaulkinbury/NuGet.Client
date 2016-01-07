@@ -91,11 +91,23 @@ namespace NuGet.Packaging
             return false;
         }
 
-        public static bool GetSatelliteFiles(Stream packageStream, PackageIdentity packageIdentity, PackagePathResolver packagePathResolver,
-            out string language, out string runtimePackageDirectory, out IEnumerable<ZipArchiveEntry> satelliteFiles)
+        public static IEnumerable<string> GetSatelliteFiles(
+            Stream packageStream,
+            PackagePathResolver packagePathResolver,
+            out string runtimePackageDirectory)
         {
-            var zipArchive = new ZipArchive(packageStream);
-            var packageReader = new PackageArchiveReader(zipArchive);
+            var packageReader = new PackageArchiveReader(packageStream);
+            return GetSatelliteFiles(packageReader, packagePathResolver, out runtimePackageDirectory);
+        }
+
+        public static IEnumerable<string> GetSatelliteFiles(
+            PackageReaderBase packageReader,
+            PackagePathResolver packagePathResolver,
+            out string runtimePackageDirectory)
+        {
+            var satelliteFileEntries = new List<string>();
+            runtimePackageDirectory = null;
+            
             var nuspecReader = new NuspecReader(packageReader.GetNuspec());
 
             PackageIdentity runtimePackageIdentity = null;
@@ -108,38 +120,13 @@ namespace NuGet.Packaging
                 var runtimePackageFilePath = packagePathResolver.GetInstalledPackageFilePath(runtimePackageIdentity);
                 if (File.Exists(runtimePackageFilePath))
                 {
-                    runtimePackageDirectory = Path.GetDirectoryName(runtimePackageFilePath);
                     // Existence of the package file is the validation that the package exists
-                    var libItemGroups = packageReader.GetLibItems();
-                    var satelliteFileEntries = new List<ZipArchiveEntry>();
-                    foreach (var libItemGroup in libItemGroups)
-                    {
-                        var satelliteFilesInGroup = libItemGroup.Items.Where(item => Path.GetDirectoryName(item).Split(Path.DirectorySeparatorChar)
-                            .Contains(packageLanguage, StringComparer.OrdinalIgnoreCase));
-
-                        foreach (var satelliteFile in satelliteFilesInGroup)
-                        {
-                            var zipArchiveEntry = zipArchive.GetEntry(satelliteFile);
-                            if (zipArchiveEntry != null)
-                            {
-                                satelliteFileEntries.Add(zipArchiveEntry);
-                            }
-                        }
-                    }
-
-                    if (satelliteFileEntries.Count > 0)
-                    {
-                        language = packageLanguage;
-                        satelliteFiles = satelliteFileEntries;
-                        return true;
-                    }
+                    runtimePackageDirectory = Path.GetDirectoryName(runtimePackageFilePath);
+                    satelliteFileEntries.AddRange(packageReader.GetSatelliteFiles(packageLanguage));
                 }
             }
 
-            language = null;
-            runtimePackageDirectory = null;
-            satelliteFiles = null;
-            return false;
+            return satelliteFileEntries;
         }
 
         public static IEnumerable<ZipFilePair> EnumeratePackageFiles(IEnumerable<ZipArchiveEntry> packageEntries, string packageDirectory,
@@ -198,10 +185,9 @@ namespace NuGet.Packaging
             PackageSaveModes packageSaveMode)
         {
             var installedSatelliteFiles = Enumerable.Empty<ZipFilePair>();
-            string language;
             string runtimePackageDirectory;
-            IEnumerable<ZipArchiveEntry> satelliteFileEntries;
-            if (GetSatelliteFiles(packageStream, packageIdentity, packagePathResolver, out language, out runtimePackageDirectory, out satelliteFileEntries))
+            var satelliteFileEntries = GetSatelliteFiles(packageStream, packageIdentity, packagePathResolver, out runtimePackageDirectory);
+            if (satelliteFileEntries.Any())
             {
                 var satelliteFiles = EnumeratePackageFiles(satelliteFileEntries, runtimePackageDirectory, packageSaveMode);
                 installedSatelliteFiles = GetInstalledPackageFiles(satelliteFiles);
@@ -253,20 +239,6 @@ namespace NuGet.Packaging
             }
 
             return packageFileFullPath;
-        }
-
-        internal static async Task<IEnumerable<string>> CreatePackageFilesAsync(IEnumerable<ZipArchiveEntry> packageEntries, string packageDirectory,
-            PackageSaveModes packageSaveMode, CancellationToken token)
-        {
-            var effectivePackageFiles = EnumeratePackageFiles(packageEntries, packageDirectory, packageSaveMode);
-            foreach (var effectivePackageFile in effectivePackageFiles)
-            {
-                var packageFileFullPath = effectivePackageFile.Item1;
-                var entry = effectivePackageFile.Item2;
-                await CreatePackageFileAsync(packageFileFullPath, entry, token);
-            }
-
-            return effectivePackageFiles.Select(pf => pf.Item1);
         }
     }
 }
