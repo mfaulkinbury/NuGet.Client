@@ -154,7 +154,7 @@ namespace NuGet.Commands.Test
                 var logger = new TestLogger();
 
                 // Create left over nupkg to simulate a corrupted install
-                var nupkgFolder = Path.Combine(packagesDir, "NewtonSoft.json", "7.0.1");
+                var nupkgFolder = Path.Combine(packagesDir, "Newtonsoft.Json", "7.0.1");
                 var nupkgPath = Path.Combine(nupkgFolder, "Newtonsoft.Json.7.0.1.nupkg");
 
                 Directory.CreateDirectory(nupkgFolder);
