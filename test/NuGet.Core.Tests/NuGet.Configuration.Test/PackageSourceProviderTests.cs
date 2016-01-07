@@ -316,7 +316,7 @@ namespace NuGet.Configuration.Test
                 var activeReplacement = @"<add key='" + NuGetConstants.FeedName + "' value='" + NuGetConstants.V2FeedUrl + "' />";
                 File.WriteAllText(nugetConfigFilePath, CreateNuGetConfigContent(enabledReplacement, disabledReplacement, activeReplacement));
 
-                Settings settings = new Settings(nugetConfigFileFolder, "nuget.config");
+                Settings settings = new Settings(nugetConfigFileFolder, "nuget.Config");
                 PackageSourceProvider before = new PackageSourceProvider(settings);
                 Assert.Equal(NuGetConstants.FeedName, before.ActivePackageSourceName);
 
