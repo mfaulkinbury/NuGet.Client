@@ -1798,9 +1798,13 @@ namespace NuGet.Configuration.Test
                 // Act
                 var settings = Settings.LoadMachineWideSettings(
                     mockBaseDirectory, "IDE", "Version", "SKU", "TestDir");
-
+                Console.WriteLine(mockBaseDirectory);
                 // Assert
                 var files = settings.Select(s => s.ConfigFilePath).ToArray();
+                foreach (var file in files)
+                {
+                    Console.WriteLine();
+                }
                 Assert.Equal(
                     files,
                     new string[]
