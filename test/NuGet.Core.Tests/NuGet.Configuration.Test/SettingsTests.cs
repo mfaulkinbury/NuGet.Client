@@ -16,17 +16,23 @@ namespace NuGet.Configuration.Test
     public class SettingsTests
     {
         [Theory]
-        [InlineData(@"D:\", @"C:\Users\SomeUsers\AppData\Roaming\nuget\nuget.config", @"C:\Users\SomeUsers\AppData\Roaming\nuget", @"nuget.config")]
-        [InlineData(@"D:\", (string)null, @"D:\", (string)null)]
-        [InlineData(@"D:\", "nuget.config", @"D:\", "nuget.config")]
-        public void TestGetFileNameAndItsRoot(string root, string settingsPath, string expectedRoot, string expectedFileName)
+        [InlineData(@"D:\", @"C:\Users\SomeUsers\AppData\Roaming\nuget\nuget.config", @"C:\Users\SomeUsers\AppData\Roaming\nuget", @"nuget.config","windows")]
+        [InlineData(@"D:\", (string)null, @"D:\", (string)null,"windows")]
+        [InlineData(@"D:\", "nuget.config", @"D:\", "nuget.config","windows")]
+        [InlineData(@"/Root",@"/Home/Users/nuget/nuget.config", @"/Home/Users/nuget/",@"nuget.config","linux")]
+        [InlineData(@"/", (string)null, @"/", (string)null,"linux")]
+        [InlineData(@"/", "nuget.config", @"/", "nuget.config","linux")]
+        public void TestGetFileNameAndItsRoot(string root, string settingsPath, string expectedRoot, string expectedFileName, string os)
         {
-            // Act
-            var tuple = Settings.GetFileNameAndItsRoot(root, settingsPath);
+            if (PlatformServices.Default.Runtime.OperatingSystem.Equals(os, StringComparison.OrdinalIgnoreCase))
+            {
+                // Act
+                var tuple = Settings.GetFileNameAndItsRoot(root, settingsPath);
 
-            // Assert
-            Assert.Equal(tuple.Item1, expectedFileName);
-            Assert.Equal(tuple.Item2, expectedRoot);
+                // Assert
+                Assert.Equal(tuple.Item1, expectedFileName);
+                Assert.Equal(tuple.Item2, expectedRoot);
+            }
         }
 
         [Fact]
@@ -1179,6 +1185,7 @@ namespace NuGet.Configuration.Test
         {
             // Arrange
             var nugetConfigPath = "NuGet.Config";
+            string os = PlatformServices.Default.Runtime.OperatingSystem;
             var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <SectionName>
@@ -1195,7 +1202,24 @@ namespace NuGet.Configuration.Test
   </SectionName>
 </configuration>";
 
-            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            if (!os.Equals("windows", StringComparison.OrdinalIgnoreCase))
+            {
+                config = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <SectionName>
+    <!-- values that are relative paths -->
+    <add key=""key1"" value=""../value1"" />
+    <add key=""key2"" value=""a/b/c"" />
+    <add key=""key3"" value=""./a/b/c"" />
+
+    <!-- values that are not relative paths -->
+    <add key=""key5"" value=""http://value3"" />
+    <add key=""key7"" value=""/a/b/c"" />
+  </SectionName>
+</configuration>";
+            }
+
+                using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
             {
                 ConfigurationFileTestUtility.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
                 Settings settings = new Settings(mockBaseDirectory);
@@ -1204,7 +1228,9 @@ namespace NuGet.Configuration.Test
                 var result = settings.GetSettingValues("SectionName", isPath: true);
 
                 // Assert
-                AssertEqualCollections(
+                if (os.Equals("windows", StringComparison.OrdinalIgnoreCase))
+                {
+                    AssertEqualCollections(
                     result,
                     new[]
                         {
@@ -1216,6 +1242,20 @@ namespace NuGet.Configuration.Test
                         "key6", @"\\a\b\c",
                         "key7", @"\a\b\c"
                         });
+                }
+                else
+                {
+                   AssertEqualCollections(
+                   result,
+                   new[]
+                       {
+                        "key1", Path.Combine(mockBaseDirectory, @"../value1"),
+                        "key2", Path.Combine(mockBaseDirectory, @"a/b/c"),
+                        "key3", Path.Combine(mockBaseDirectory, @"./a/b/c"),
+                        "key5", @"http://value3",
+                        "key7", @"/a/b/c"
+                       });
+                }
             }
         }
 
@@ -1650,28 +1690,32 @@ namespace NuGet.Configuration.Test
         }
 
         [Theory]
-        [InlineData(@"z:\foo")]
-        [InlineData(@"x:\foo\bar\qux")]
-        [InlineData(@"\\share\folder\subfolder")]
-        public void GetValueReturnsPathWhenPathIsRooted(string value)
+        [InlineData(@"z:\foo","windows")]
+        [InlineData(@"x:\foo\bar\qux","windows")]
+        [InlineData(@"\\share\folder\subfolder","windows")]
+        [InlineData(@"\a\b\c","linux")]
+        public void GetValueReturnsPathWhenPathIsRooted(string value, string os)
         {
-            // Arrange
-            using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+            if (PlatformServices.Default.Runtime.OperatingSystem.Equals(os, StringComparison.OrdinalIgnoreCase))
             {
-                var config = String.Format(@"<?xml version=""1.0"" encoding=""utf-8""?>
+                // Arrange
+                using (var mockBaseDirectory = TestFileSystemUtility.CreateRandomTestFolder())
+                {
+                    var config = String.Format(@"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <SectionName>
     <add key=""path-key"" value=""{0}"" />
   </SectionName>
 </configuration>", value);
-                ConfigurationFileTestUtility.CreateConfigurationFile("nuget.config", mockBaseDirectory, config);
-                var settings = new Settings(mockBaseDirectory, "nuget.config");
+                    ConfigurationFileTestUtility.CreateConfigurationFile("nuget.config", mockBaseDirectory, config);
+                    var settings = new Settings(mockBaseDirectory, "nuget.config");
 
-                // Act
-                string result = settings.GetValue("SectionName", "path-key", isPath: true);
+                    // Act
+                    string result = settings.GetValue("SectionName", "path-key", isPath: true);
 
-                // Assert
-                Assert.Equal(value, result);
+                    // Assert
+                    Assert.Equal(value, result);
+                }
             }
         }
 
