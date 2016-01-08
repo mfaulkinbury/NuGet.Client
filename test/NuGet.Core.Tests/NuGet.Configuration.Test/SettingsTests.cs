@@ -1803,7 +1803,7 @@ namespace NuGet.Configuration.Test
                 var files = settings.Select(s => s.ConfigFilePath).ToArray();
                 foreach (var file in files)
                 {
-                    Console.WriteLine();
+                    Console.WriteLine(file);
                 }
                 Assert.Equal(
                     files,
