@@ -1809,14 +1809,14 @@ namespace NuGet.Configuration.Test
                     files,
                     new string[]
                         {
-                        Path.Combine(mockBaseDirectory, "NuGet","Config","IDE","Version","SKU","a1.config"),
                         Path.Combine(mockBaseDirectory, "NuGet","Config","IDE","Version","SKU","a2.config"),
-                        Path.Combine(mockBaseDirectory, "NuGet","Config","IDE","Version","a1.config"),
+                        Path.Combine(mockBaseDirectory, "NuGet","Config","IDE","Version","SKU","a1.config"),
                         Path.Combine(mockBaseDirectory, "NuGet","Config","IDE","Version","a2.config"),
-                        Path.Combine(mockBaseDirectory, "NuGet","Config","IDE","a1.config"),
+                        Path.Combine(mockBaseDirectory, "NuGet","Config","IDE","Version","a1.config"),
                         Path.Combine(mockBaseDirectory, "NuGet","Config","IDE","a2.config"),
-                        Path.Combine(mockBaseDirectory, "NuGet","Config","a1.config"),
-                        Path.Combine(mockBaseDirectory, "NuGet","Config","a2.config")
+                        Path.Combine(mockBaseDirectory, "NuGet","Config","IDE","a1.config"),
+                        Path.Combine(mockBaseDirectory, "NuGet","Config","a2.config"),
+                        Path.Combine(mockBaseDirectory, "NuGet","Config","a1.config")
                         });
             }
         }
