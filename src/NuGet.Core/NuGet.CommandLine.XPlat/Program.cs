@@ -42,6 +42,7 @@ namespace NuGet.CommandLine.XPlat
             // Set up logging
             _log = new CommandOutputLogger(verbosity);
 
+#if !DNXCORE50
             // Increase the maximum number of connections per server.
             if (!RuntimeEnvironmentHelper.IsMono)
             {
@@ -52,6 +53,7 @@ namespace NuGet.CommandLine.XPlat
                 // Keep mono limited to a single download to avoid issues.
                 ServicePointManager.DefaultConnectionLimit = 1;
             }
+#endif
 
             app.Command("restore", restore =>
                 {
