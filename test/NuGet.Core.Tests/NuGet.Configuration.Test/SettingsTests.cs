@@ -19,7 +19,7 @@ namespace NuGet.Configuration.Test
         [InlineData(@"D:\", @"C:\Users\SomeUsers\AppData\Roaming\nuget\nuget.config", @"C:\Users\SomeUsers\AppData\Roaming\nuget", @"nuget.config","windows")]
         [InlineData(@"D:\", (string)null, @"D:\", (string)null,"windows")]
         [InlineData(@"D:\", "nuget.config", @"D:\", "nuget.config","windows")]
-        [InlineData(@"/Root",@"/Home/Users/nuget/nuget.config", @"/Home/Users/nuget/",@"nuget.config","linux")]
+        [InlineData(@"/Root",@"/Home/Users/nuget/nuget.config", @"/Home/Users/nuget",@"nuget.config","linux")]
         [InlineData(@"/", (string)null, @"/", (string)null,"linux")]
         [InlineData(@"/", "nuget.config", @"/", "nuget.config","linux")]
         public void TestGetFileNameAndItsRoot(string root, string settingsPath, string expectedRoot, string expectedFileName, string os)
@@ -1693,7 +1693,7 @@ namespace NuGet.Configuration.Test
         [InlineData(@"z:\foo","windows")]
         [InlineData(@"x:\foo\bar\qux","windows")]
         [InlineData(@"\\share\folder\subfolder","windows")]
-        [InlineData(@"\a\b\c","linux")]
+        [InlineData(@"/a/b/c","linux")]
         public void GetValueReturnsPathWhenPathIsRooted(string value, string os)
         {
             if (PlatformServices.Default.Runtime.OperatingSystem.Equals(os, StringComparison.OrdinalIgnoreCase))
