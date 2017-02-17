@@ -16,20 +16,20 @@ function Test-RemovingPackageFromProjectDoesNotRemoveIfInUse {
     Assert-SolutionPackage Ninject
 }
 
-function Test-UninstallPackageWhatIf {		
-     # Arrange		
-     $p1 = New-ClassLibrary		
-     		
-     Install-Package Ninject -ProjectName $p1.Name		
-     Assert-Reference $p1 Ninject		
-     		
- 	# Act		
-     Uninstall-Package Ninject -ProjectName $p1.Name -What		
- 		
- 	# Assert: packages are not uninstalled		
- 	Assert-Reference $p1 Ninject		
-	Assert-Package $p1 Ninject		
- }		
+function Test-UninstallPackageWhatIf {
+    # Arrange
+    $p1 = New-ClassLibrary
+    
+    Install-Package Ninject -ProjectName $p1.Name
+    Assert-Reference $p1 Ninject
+    
+	# Act
+    Uninstall-Package Ninject -ProjectName $p1.Name -What
+
+	# Assert: packages are not uninstalled
+	Assert-Reference $p1 Ninject
+	Assert-Package $p1 Ninject
+}
 
 function Test-RemovingPackageWithDependencyFromProjectDoesNotRemoveIfInUse {
     # Arrange
@@ -67,25 +67,53 @@ function Test-RemovePackageRemovesPackageFromSolutionIfNotInUse {
     Assert-Null (Get-SolutionPackage elmah)
 }
 
-function Test-RemoveMPPackageRemovesPackageFromSolutionIfNotInUse {
+function Test-RemoveSealedManagementPackPackageRemovesPackageFromSolutionIfNotInUse {
 	param(
         $context
     )
 	
 	# Arrange
-	$package = "FrameworkMP"
+	$package = "PackageWithSealedManagementPackReference"
 	$project = New-ManagementPack_2012R2
 	
 	Install-Package $package -ProjectName $project.Name -Source $context.RepositoryRoot
-	Assert-MPReference $project $package
+	Assert-ManagementPackReference $project ComponentMP
+	#TODO: Assert-Package calls Get-PackagesConfigNuGetProject which assumes project has TargetFrameworkMoniker property
+	#Assert-Package $project $package
 	Assert-SolutionPackage $package
 
 	# Act
 	Uninstall-Package $package -ProjectName $project.Name
 	
 	# Assert
-	Assert-NoMPReference $project $package
-	# TODO:  Assert-Null (Get-ProjectPackage $p1 $package)
+	Assert-NoManagementPackReference $project ComponentMP
+	#TODO: Get-ProjectPackage calls Get-PackagesConfigNuGetProject which assumes project has TargetFrameworkMoniker property
+	#Assert-Null (Get-ProjectPackage $project $package)
+	Assert-Null (Get-SolutionPackage $package)
+}
+
+function Test-RemoveManagementPackBundlePackageRemovesPackageFromSolutionIfNotInUse {
+	param(
+        $context
+    )
+	
+	# Arrange
+	$package = "PackageWithManagementPackBundleReference"
+	$project = New-ManagementPack_2012R2
+	
+	Install-Package $package -ProjectName $project.Name -Source $context.RepositoryRoot
+	Assert-ManagementPackReference $project FrameworkMP
+	#TODO: Assert-Package calls Get-PackagesConfigNuGetProject which assumes project has TargetFrameworkMoniker property
+	#Assert-Package $project $package
+	Assert-SolutionPackage $package
+
+	# Act
+	Uninstall-Package $package -ProjectName $project.Name
+	
+	# Assert
+	Assert-NoManagementPackReference $project FrameworkMP
+	#TODO: Get-ProjectPackage calls Get-PackagesConfigNuGetProject which assumes project has TargetFrameworkMoniker property
+	#Assert-Null (Get-ProjectPackage $project $package)
 	Assert-Null (Get-SolutionPackage $package)
 }
 

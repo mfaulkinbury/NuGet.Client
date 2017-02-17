@@ -121,25 +121,43 @@ function Test-UpdatingPackageDependentPackageVersion {
     Assert-Package $p jquery.validation 1.8.0.1
 }
 
-function Test-UpdatingMPPackageVersion {
+function Test-UpdatingSealedManagementPackPackageVersion {
 	param(
         $context
     )
 	
 	# Arrange
-	$package = "FrameworkMP"
+	$package = "PackageWithSealedManagementPackReference"
 	$project = New-ManagementPack_2012R2
 
 	# Act
-	Install-Package $package -Version 1.0.0.3 -ProjectName $project.Name -Source $context.RepositoryRoot
-	Assert-MPReference $project $package -Version 1.0.0.3
+	Install-Package $package -Version 1.0.3 -ProjectName $project.Name -Source $context.RepositoryRoot
+	Assert-ManagementPackReference $project ComponentMP -Version 1.0.0.0
 	
 	Update-Package $package -ProjectName $project.Name -Source $context.RepositoryRoot
 	
 	# Assert
-	Assert-MPReference $project $package -Version 1.0.0.4
+	Assert-ManagementPackReference $project ComponentMP -Version 1.0.0.2
 }
 
+function Test-UpdatingManagementPackBundlePackageVersion {
+	param(
+        $context
+    )
+	
+	# Arrange
+	$package = "PackageWithManagementPackBundleReference"
+	$project = New-ManagementPack_2012R2
+
+	# Act
+	Install-Package $package -Version 1.0.3 -ProjectName $project.Name -Source $context.RepositoryRoot
+	Assert-ManagementPackReference $project FrameworkMP -Version 1.0.0.3
+	
+	Update-Package $package -ProjectName $project.Name -Source $context.RepositoryRoot
+	
+	# Assert
+	Assert-ManagementPackReference $project FrameworkMP -Version 1.0.0.4
+}
 
 function Test-UpdatingPackageWhatIf {
     param(
